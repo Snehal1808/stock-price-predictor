@@ -1,10 +1,12 @@
-import numpy as np 
+import numpy as np
 import pandas as pd
 import yfinance as yf
 from keras.models import load_model
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+from ta.volatility import BollingerBands
+from ta.momentum import RSIIndicator
 
 st.set_page_config(page_title="MarketLens", layout="wide")
 
@@ -109,3 +111,34 @@ st.subheader("Latest Forecast Summary")
 st.write(f"📈 Optimistic Price: ${upper_bound[-1]:.2f}")
 st.write(f"📉 Pessimistic Price: ${lower_bound[-1]:.2f}")
 st.write(f"🎯 Predicted Price: ${predictions[-1]:.2f}")
+
+# Technical Indicators
+st.subheader("Technical Indicators")
+
+# Bollinger Bands
+boll = BollingerBands(close=data["Close"], window=20, window_dev=2)
+bb_upper = boll.bollinger_hband()
+bb_lower = boll.bollinger_lband()
+
+fig5 = plt.figure(figsize=(12,6))
+plt.plot(data.Close, label="Close", color="black")
+plt.plot(bb_upper, label="Upper Band", color="orange")
+plt.plot(bb_lower, label="Lower Band", color="blue")
+plt.fill_between(data.index, bb_lower, bb_upper, color="gray", alpha=0.2)
+plt.title("Bollinger Bands")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.legend()
+st.pyplot(fig5)
+
+# RSI
+rsi = RSIIndicator(close=data["Close"], window=14).rsi()
+fig6 = plt.figure(figsize=(12,3))
+plt.plot(rsi, label="RSI", color="purple")
+plt.axhline(70, linestyle="--", color="red", label="Overbought (70)")
+plt.axhline(30, linestyle="--", color="green", label="Oversold (30)")
+plt.title("Relative Strength Index (RSI)")
+plt.xlabel("Date")
+plt.ylabel("RSI Value")
+plt.legend()
+st.pyplot(fig6)
