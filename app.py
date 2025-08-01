@@ -14,10 +14,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar
-st.sidebar.title("Stock Options")
+st.sidebar.title("Stock Settings")
 symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="AAPL")
 years = st.sidebar.slider("Forecast Years", 1, 5, 1)
-confidence_pct = st.sidebar.slider("Confidence Range (%)", 1, 20, 5)
 future_days = years * 365
 
 show_ma = st.sidebar.multiselect(
@@ -25,6 +24,8 @@ show_ma = st.sidebar.multiselect(
     options=["MA50", "MA100", "MA200"],
     default=["MA50", "MA100", "MA200"]
 )
+
+confidence_pct = st.sidebar.slider("Forecast Confidence Range (%)", min_value=1, max_value=20, value=5)
 
 @st.cache_data
 def load_data(ticker):
@@ -59,7 +60,7 @@ if symbol:
     plt.legend()
     st.pyplot(fig_ma)
 
-    # Prepare data
+    # Prepare data for prediction
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[['Close']])
 
@@ -74,45 +75,43 @@ if symbol:
 
     predicted = []
     for _ in range(future_days):
-        pred = model.predict(input_sequence, verbose=0)[0][0]
+        pred = model.predict(input_sequence)[0][0]
         predicted.append(pred)
         input_sequence = np.append(input_sequence[:, 1:, :], [[[pred]]], axis=1)
 
     predicted_prices = scaler.inverse_transform(np.array(predicted).reshape(-1, 1))
-    optimistic = predicted_prices * (1 + confidence_pct / 100)
-    pessimistic = predicted_prices * (1 - confidence_pct / 100)
 
-    # Forecast DataFrame
+    # Forecast plot with adjustable confidence
+    st.subheader("Forecasted Stock Price")
     forecast_dates = pd.date_range(start=data['Date'].iloc[-1] + pd.Timedelta(days=1), periods=future_days)
     forecast_df = pd.DataFrame({
         "Date": forecast_dates,
-        "Forecast": predicted_prices.flatten(),
-        "Optimistic": optimistic.flatten(),
-        "Pessimistic": pessimistic.flatten()
+        "Forecast": predicted_prices.flatten()
     })
 
-    # Forecast Plot
-    st.subheader("Forecasted Stock Price with Confidence Range")
+    confidence_range = confidence_pct / 100
+    forecast_df["Upper"] = forecast_df["Forecast"] * (1 + confidence_range)
+    forecast_df["Lower"] = forecast_df["Forecast"] * (1 - confidence_range)
+
     fig_forecast = plt.figure(figsize=(10, 5))
     plt.plot(data['Date'], data['Close'], label='Historical')
     plt.plot(forecast_df['Date'], forecast_df['Forecast'], label='Forecast', color='red')
-    plt.plot(forecast_df['Date'], forecast_df['Optimistic'], label='Optimistic', linestyle='--', color='green')
-    plt.plot(forecast_df['Date'], forecast_df['Pessimistic'], label='Pessimistic', linestyle='--', color='orange')
-    plt.title("Stock Price Forecast")
+    plt.fill_between(forecast_df['Date'], forecast_df['Lower'], forecast_df['Upper'],
+                     color='red', alpha=0.2, label=f'Confidence Interval (±{confidence_pct}%)')
+    plt.title("Stock Price Forecast with Confidence Range")
     plt.xlabel("Date")
     plt.ylabel("Price")
     plt.legend()
     st.pyplot(fig_forecast)
 
-    # Forecast Table
     st.subheader("Forecast Data Table")
     st.dataframe(forecast_df.tail())
 
-    # CSV Download
+    # Download CSV button
     csv = forecast_df.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="Download Forecast Data as CSV",
+        label="📥 Download Forecast as CSV",
         data=csv,
-        file_name=f"{symbol}_forecast.csv",
+        file_name=f'{symbol}_forecast.csv',
         mime='text/csv'
     )
