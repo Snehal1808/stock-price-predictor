@@ -15,13 +15,7 @@ st.markdown("""
 
 # Sidebar
 st.sidebar.title("Stock Settings")
-if "symbol" not in st.session_state:
-    st.session_state.symbol = ""
-
-symbol = st.sidebar.text_input(
-    "Enter Ticker Symbol (e.g., AAPL, GOOGL)",
-    key="symbol"
-)
+symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="")
 years = st.sidebar.slider("Forecast Years", 1, 5, 1)
 future_days = years * 365
 
