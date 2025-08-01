@@ -5,7 +5,6 @@ from keras.models import load_model
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from io import StringIO
 
 st.set_page_config(page_title="MarketLens", layout="wide")
 
@@ -26,13 +25,22 @@ show_ma = st.sidebar.multiselect(
     default=["MA50", "MA100", "MA200"]
 )
 
-show_bb = st.sidebar.checkbox("Show Bollinger Bands", value=True)
+show_rsi = st.sidebar.checkbox("Show RSI (14-day)", value=True)
 
 @st.cache_data
 def load_data(ticker):
     df = yf.download(ticker, start="2012-01-01")
     df.reset_index(inplace=True)
     return df
+
+# RSI Calculation
+def compute_rsi(data, period=14):
+    delta = data['Close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
 
 if symbol:
     with st.spinner("Loading data..."):
@@ -43,50 +51,46 @@ if symbol:
     st.dataframe(data.tail())
 
     # Technical Indicators
-    ma_50 = data['Close'].rolling(window=50).mean()
-    ma_100 = data['Close'].rolling(window=100).mean()
-    ma_200 = data['Close'].rolling(window=200).mean()
+    data['MA50'] = data['Close'].rolling(window=50).mean()
+    data['MA100'] = data['Close'].rolling(window=100).mean()
+    data['MA200'] = data['Close'].rolling(window=200).mean()
+    data['RSI'] = compute_rsi(data)
 
-    # Bollinger Bands
-    sma = data['Close'].rolling(window=20).mean()
-    std = data['Close'].rolling(window=20).std()
-    upper_bb = sma + 2 * std
-    lower_bb = sma - 2 * std
+    plot_df = data.dropna().tail(180)
 
-    # Combine into DataFrame for plotting
-    plot_df = data.copy()
-    plot_df['MA50'] = ma_50
-    plot_df['MA100'] = ma_100
-    plot_df['MA200'] = ma_200
-    plot_df['SMA20'] = sma
-    plot_df['UpperBB'] = upper_bb
-    plot_df['LowerBB'] = lower_bb
-    plot_df = plot_df.dropna().tail(180)  # last 180 days
-
+    # Price + MA Chart
     st.subheader("Price Chart with Indicators")
-
-    fig_ma = plt.figure(figsize=(12, 6))
-    plt.plot(plot_df['Date'], plot_df['Close'], label='Close Price', color='green', linewidth=2)
-
+    fig_price, ax1 = plt.subplots(figsize=(12, 6))
+    ax1.plot(plot_df['Date'], plot_df['Close'], label='Close Price', color='green', linewidth=2)
     if "MA50" in show_ma:
-        plt.plot(plot_df['Date'], plot_df['MA50'], label="MA50", color='red', linewidth=1)
+        ax1.plot(plot_df['Date'], plot_df['MA50'], label="MA50", color='red', linewidth=1)
     if "MA100" in show_ma:
-        plt.plot(plot_df['Date'], plot_df['MA100'], label="MA100", color='blue', linewidth=1)
+        ax1.plot(plot_df['Date'], plot_df['MA100'], label="MA100", color='blue', linewidth=1)
     if "MA200" in show_ma:
-        plt.plot(plot_df['Date'], plot_df['MA200'], label="MA200", color='orange', linewidth=1)
+        ax1.plot(plot_df['Date'], plot_df['MA200'], label="MA200", color='orange', linewidth=1)
 
-    if show_bb:
-        plt.plot(plot_df['Date'], plot_df['UpperBB'], label='Upper BB', color='gray', linestyle='--', alpha=0.6)
-        plt.plot(plot_df['Date'], plot_df['LowerBB'], label='Lower BB', color='gray', linestyle='--', alpha=0.6)
+    ax1.set_xlabel("Date")
+    ax1.set_ylabel("Price")
+    ax1.set_title("Recent Price Chart")
+    ax1.legend()
+    ax1.grid(True)
+    st.pyplot(fig_price)
 
-    plt.xlabel("Date")
-    plt.ylabel("Price")
-    plt.title("Recent Price Chart with Indicators")
-    plt.legend()
-    plt.grid(True)
-    st.pyplot(fig_ma)
+    # RSI Chart
+    if show_rsi:
+        st.subheader("RSI (Relative Strength Index)")
+        fig_rsi = plt.figure(figsize=(12, 3))
+        plt.plot(plot_df['Date'], plot_df['RSI'], color='purple', label='RSI')
+        plt.axhline(70, color='red', linestyle='--', linewidth=1)
+        plt.axhline(30, color='blue', linestyle='--', linewidth=1)
+        plt.title("14-Day RSI")
+        plt.xlabel("Date")
+        plt.ylabel("RSI")
+        plt.legend()
+        plt.grid(True)
+        st.pyplot(fig_rsi)
 
-    # Prepare data for prediction
+    # Prepare for Prediction
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[['Close']])
 
