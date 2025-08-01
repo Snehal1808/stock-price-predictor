@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np 
 import pandas as pd
 import yfinance as yf
 from keras.models import load_model
@@ -13,67 +13,99 @@ st.markdown("""
     <h4 style='text-align: center; color: white;'>AI-powered insights into stock market trends.</h4>
 """, unsafe_allow_html=True)
 
+# Load model
+model = load_model("stock_model.keras")
+
 # Sidebar
 st.sidebar.title("Stock Symbol")
-symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="AAPL")
-years = st.sidebar.slider("Forecast Years", 1, 5, 1)
-future_days = years * 365
+stock = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="AAPL")
+start = '2012-01-01'
+end = '2024-08-18'
 
-@st.cache_data
-def load_data(ticker):
-    df = yf.download(ticker, start="2012-01-01")
-    df.reset_index(inplace=True)
-    return df
+st.sidebar.title("Forecast Period")
+years = st.sidebar.slider("Years", 1, 5, 1)
+period_days = years * 365
 
-if symbol:
-    st.text("Loading data...")
-    data = load_data(symbol)
-    st.text("Loading data...done!")
+# Load data
+data = yf.download(stock, start ,end)
 
-    st.subheader(f"{symbol} Stock Data")
-    st.dataframe(data.tail())
+st.subheader(f'{stock} Historical Stock Data')
+st.write(data.tail())
 
-    # Plot MA
-    st.subheader("Price vs Moving Averages")
-    ma_50 = data.Close.rolling(50).mean()
-    ma_100 = data.Close.rolling(100).mean()
-    ma_200 = data.Close.rolling(200).mean()
+# Split data
+data_train = pd.DataFrame(data.Close[0: int(len(data)*0.80)])
+data_test = pd.DataFrame(data.Close[int(len(data)*0.80): len(data)])
 
-    fig_ma = plt.figure(figsize=(10, 5))
-    plt.plot(data['Close'], label='Close', color='green')
-    plt.plot(ma_50, label='MA50', color='red')
-    plt.plot(ma_100, label='MA100', color='blue')
-    plt.plot(ma_200, label='MA200', color='orange')
-    plt.legend()
-    st.pyplot(fig_ma)
+scaler = MinMaxScaler(feature_range=(0,1))
 
-    # Prepare data
-    scaler = MinMaxScaler(feature_range=(0,1))
-    scaled_data = scaler.fit_transform(data[['Close']])
+past_100_days = data_train.tail(100)
+data_test = pd.concat([past_100_days, data_test], ignore_index=True)
+data_test_scaled = scaler.fit_transform(data_test)
 
-    model = load_model("stock_model.keras")
+# MA plots
+ma_50 = data.Close.rolling(50).mean()
+ma_100 = data.Close.rolling(100).mean()
+ma_200 = data.Close.rolling(200).mean()
 
-    past_100 = scaled_data[-100:]
-    input_sequence = past_100.reshape(1, 100, 1)
+st.subheader('Price vs MA50')
+fig1 = plt.figure(figsize=(10,6))
+plt.plot(data.Close, label='Closing Price', color='green')
+plt.plot(ma_50, label='MA50', color='red')
+plt.legend()
+st.pyplot(fig1)
 
-    predicted = []
-    for _ in range(future_days):
-        pred = model.predict(input_sequence)[0][0]
-        predicted.append(pred)
-        input_sequence = np.append(input_sequence[:, 1:, :], [[[pred]]], axis=1)
+st.subheader('Price vs MA50 vs MA100')
+fig2 = plt.figure(figsize=(10,6))
+plt.plot(data.Close, label='Closing Price', color='green')
+plt.plot(ma_50, label='MA50', color='red')
+plt.plot(ma_100, label='MA100', color='blue')
+plt.legend()
+st.pyplot(fig2)
 
-    predicted_prices = scaler.inverse_transform(np.array(predicted).reshape(-1, 1))
+st.subheader('Price vs MA100 vs MA200')
+fig3 = plt.figure(figsize=(10,6))
+plt.plot(data.Close, label='Closing Price', color='green')
+plt.plot(ma_100, label='MA100', color='red')
+plt.plot(ma_200, label='MA200', color='blue')
+plt.legend()
+st.pyplot(fig3)
 
-    # Forecast plot
-    st.subheader("Forecasted Stock Price")
-    forecast_dates = pd.date_range(start=data['Date'].iloc[-1] + pd.Timedelta(days=1), periods=future_days)
-    forecast_df = pd.DataFrame({"Date": forecast_dates, "Forecast": predicted_prices.flatten()})
+# Prepare test data
+x_test = []
+y_test = []
 
-    fig_forecast = plt.figure(figsize=(10, 5))
-    plt.plot(data['Date'], data['Close'], label='Historical')
-    plt.plot(forecast_df['Date'], forecast_df['Forecast'], label='Forecast', color='red')
-    plt.legend()
-    st.pyplot(fig_forecast)
+for i in range(100, data_test_scaled.shape[0]):
+    x_test.append(data_test_scaled[i-100:i])
+    y_test.append(data_test_scaled[i,0])
 
-    st.subheader("Forecast Data Table")
-    st.dataframe(forecast_df.tail())
+x_test, y_test = np.array(x_test), np.array(y_test)
+
+# Predict
+predictions = model.predict(x_test)
+scale_factor = 1 / scaler.scale_[0]
+
+predictions = predictions.flatten() * scale_factor
+y_test = y_test * scale_factor
+
+# Confidence interval
+errors = y_test - predictions
+std_dev = np.std(errors)
+upper_bound = predictions + 1.96 * std_dev
+lower_bound = predictions - 1.96 * std_dev
+
+# Final plot
+st.subheader('Actual vs Predicted with Confidence Range')
+fig4 = plt.figure(figsize=(10,6))
+plt.plot(y_test, label='Actual Price', color='green')
+plt.plot(predictions, label='Predicted Price', color='red')
+plt.fill_between(range(len(predictions)), lower_bound, upper_bound, color='orange', alpha=0.3, label='Confidence Range')
+plt.xlabel('Time')
+plt.ylabel('Price')
+plt.legend()
+st.pyplot(fig4)
+
+# Display final predicted points
+st.subheader("Latest Forecast Summary")
+st.write(f"📈 Optimistic Price: ${upper_bound[-1]:.2f}")
+st.write(f"📉 Pessimistic Price: ${lower_bound[-1]:.2f}")
+st.write(f"🎯 Predicted Price: ${predictions[-1]:.2f}")
