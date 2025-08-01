@@ -104,6 +104,20 @@ if symbol:
     plt.legend()
     st.pyplot(fig_forecast)
 
+    # User-defined price alert
+st.sidebar.markdown("### 🔔 Price Alert")
+alert_price = st.sidebar.number_input(
+    "Set Target Price for Alert",
+    min_value=0.0,
+    value=float(data['Close'].iloc[-1] * 1.05),  # Default: 5% above last close
+    step=1.0
+)
+
+# Check forecast for alert condition
+if (forecast_df['Forecast'] >= alert_price).any():
+    alert_day = forecast_df[forecast_df['Forecast'] >= alert_price].iloc[0]
+    st.warning(f"📈 Forecast is expected to cross ${alert_price:.2f} on **{alert_day['Date'].date()}** with price **${alert_day['Forecast']:.2f}**")
+
     st.subheader("Forecast Data Table")
     st.dataframe(forecast_df.tail())
 
