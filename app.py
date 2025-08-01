@@ -76,19 +76,23 @@ if symbol:
     ax1.grid(True)
     st.pyplot(fig_price)
 
-    # RSI Chart
+        # RSI Chart
     if show_rsi:
         st.subheader("RSI (Relative Strength Index)")
-        fig_rsi = plt.figure(figsize=(12, 3))
-        plt.plot(plot_df['Date'], plot_df['RSI'], color='purple', label='RSI')
-        plt.axhline(70, color='red', linestyle='--', linewidth=1)
-        plt.axhline(30, color='blue', linestyle='--', linewidth=1)
-        plt.title("14-Day RSI")
-        plt.xlabel("Date")
-        plt.ylabel("RSI")
-        plt.legend()
-        plt.grid(True)
+        rsi_df = data[['Date', 'RSI']].dropna().tail(180)
+
+        fig_rsi, ax_rsi = plt.subplots(figsize=(12, 3))
+        ax_rsi.plot(rsi_df['Date'], rsi_df['RSI'], color='purple', label='RSI (14)')
+        ax_rsi.axhline(70, color='red', linestyle='--', linewidth=1, label='Overbought (70)')
+        ax_rsi.axhline(30, color='blue', linestyle='--', linewidth=1, label='Oversold (30)')
+        ax_rsi.set_xlabel("Date")
+        ax_rsi.set_ylabel("RSI")
+        ax_rsi.set_title("14-Day RSI")
+        ax_rsi.legend()
+        ax_rsi.grid(True)
+        fig_rsi.autofmt_xdate()
         st.pyplot(fig_rsi)
+
 
     # Prepare for Prediction
     scaler = MinMaxScaler(feature_range=(0, 1))
