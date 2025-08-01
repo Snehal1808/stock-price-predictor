@@ -20,12 +20,13 @@ years = st.sidebar.slider("Forecast Years", 1, 5, 1)
 future_days = years * 365
 
 show_ma = st.sidebar.multiselect(
-    "Select Moving Averages to Display",
+    "Select Moving Averages",
     options=["MA50", "MA100", "MA200"],
     default=["MA50", "MA100", "MA200"]
 )
 
-confidence_pct = st.sidebar.slider("Forecast Confidence Range (%)", min_value=1, max_value=20, value=5)
+show_bb = st.sidebar.checkbox("Show Bollinger Bands", value=True)
+optimism_range = st.sidebar.slider("Optimism/Pessimism Range (%)", 1, 20, 5)
 
 @st.cache_data
 def load_data(ticker):
@@ -38,67 +39,83 @@ if symbol:
         data = load_data(symbol)
     st.success("Data loaded successfully!")
 
-    st.subheader(f"{symbol} Stock Data")
+    st.subheader(f"{symbol.upper()} Stock Data")
     st.dataframe(data.tail())
 
-    # Moving Averages
-    st.subheader("Price vs Moving Averages")
-    ma_50 = data.Close.rolling(50).mean()
-    ma_100 = data.Close.rolling(100).mean()
-    ma_200 = data.Close.rolling(200).mean()
+    # Calculate MAs
+    ma_50 = data['Close'].rolling(50).mean()
+    ma_100 = data['Close'].rolling(100).mean()
+    ma_200 = data['Close'].rolling(200).mean()
 
+    # Bollinger Bands
+    sma_20 = data['Close'].rolling(window=20).mean()
+    std_20 = data['Close'].rolling(window=20).std()
+    upper_bb = sma_20 + (2 * std_20)
+    lower_bb = sma_20 - (2 * std_20)
+
+    # Plot
+    st.subheader("Price Chart with Indicators")
     fig_ma = plt.figure(figsize=(10, 5))
-    plt.plot(data['Close'], label='Close Price', color='green')
+    plt.plot(data['Date'], data['Close'], label='Close Price', color='green')
     if "MA50" in show_ma:
-        plt.plot(ma_50, label="MA50", color='red')
+        plt.plot(data['Date'], ma_50, label="MA50", color='red')
     if "MA100" in show_ma:
-        plt.plot(ma_100, label="MA100", color='blue')
+        plt.plot(data['Date'], ma_100, label="MA100", color='blue')
     if "MA200" in show_ma:
-        plt.plot(ma_200, label="MA200", color='orange')
+        plt.plot(data['Date'], ma_200, label="MA200", color='orange')
+    if show_bb:
+        plt.plot(data['Date'], upper_bb, label='Upper Bollinger Band', linestyle='--', color='magenta')
+        plt.plot(data['Date'], lower_bb, label='Lower Bollinger Band', linestyle='--', color='cyan')
     plt.xlabel("Date")
     plt.ylabel("Price")
     plt.legend()
     st.pyplot(fig_ma)
 
-    # Prepare data for prediction
+    # Forecasting
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[['Close']])
 
     try:
         model = load_model("stock_model.keras")
     except Exception as e:
-        st.error(f"Error loading model: {e}")
+        st.error(f"Model loading failed: {e}")
         st.stop()
 
     past_100 = scaled_data[-100:]
-    input_sequence = past_100.reshape(1, 100, 1)
+    input_seq = past_100.reshape(1, 100, 1)
 
-    predicted = []
+    predictions = []
     for _ in range(future_days):
-        pred = model.predict(input_sequence)[0][0]
-        predicted.append(pred)
-        input_sequence = np.append(input_sequence[:, 1:, :], [[[pred]]], axis=1)
+        pred = model.predict(input_seq, verbose=0)[0][0]
+        predictions.append(pred)
+        input_seq = np.append(input_seq[:, 1:, :], [[[pred]]], axis=1)
 
-    predicted_prices = scaler.inverse_transform(np.array(predicted).reshape(-1, 1))
+    forecast_prices = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
 
-    # Forecast plot with adjustable confidence
-    st.subheader("Forecasted Stock Price")
     forecast_dates = pd.date_range(start=data['Date'].iloc[-1] + pd.Timedelta(days=1), periods=future_days)
     forecast_df = pd.DataFrame({
         "Date": forecast_dates,
-        "Forecast": predicted_prices.flatten()
+        "Forecast": forecast_prices.flatten()
     })
 
-    confidence_range = confidence_pct / 100
-    forecast_df["Upper"] = forecast_df["Forecast"] * (1 + confidence_range)
-    forecast_df["Lower"] = forecast_df["Forecast"] * (1 - confidence_range)
+    # Optimistic & Pessimistic Range
+    optimism = (optimism_range / 100) * forecast_df["Forecast"]
+    forecast_df["Optimistic"] = forecast_df["Forecast"] + optimism
+    forecast_df["Pessimistic"] = forecast_df["Forecast"] - optimism
 
+    # Forecast Plot
+    st.subheader("Forecasted Stock Price")
     fig_forecast = plt.figure(figsize=(10, 5))
     plt.plot(data['Date'], data['Close'], label='Historical')
     plt.plot(forecast_df['Date'], forecast_df['Forecast'], label='Forecast', color='red')
-    plt.fill_between(forecast_df['Date'], forecast_df['Lower'], forecast_df['Upper'],
-                     color='red', alpha=0.2, label=f'Confidence Interval (±{confidence_pct}%)')
-    plt.title("Stock Price Forecast with Confidence Range")
+    plt.fill_between(
+        forecast_df['Date'],
+        forecast_df['Pessimistic'],
+        forecast_df['Optimistic'],
+        color='orange', alpha=0.3,
+        label=f"±{optimism_range}% Range"
+    )
+    plt.title("AI Forecast with Confidence Range")
     plt.xlabel("Date")
     plt.ylabel("Price")
     plt.legend()
@@ -107,11 +124,9 @@ if symbol:
     st.subheader("Forecast Data Table")
     st.dataframe(forecast_df.tail())
 
-    # Download CSV button
-    csv = forecast_df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Download Forecast as CSV",
-        data=csv,
-        file_name=f'{symbol}_forecast.csv',
-        mime='text/csv'
-    )
+    # Optional: Download CSV
+    csv = forecast_df.to_csv(index=False).encode("utf-8")
+    st.download_button("Download Forecast Data (CSV)", csv, file_name=f"{symbol.upper()}_forecast.csv", mime="text/csv")
+
+else:
+    st.warning("Please enter a stock ticker symbol in the sidebar to get started.")
