@@ -116,31 +116,3 @@ if symbol:
         else:
             volatility = "🔴 High"
         st.markdown(f"Estimated forecast volatility: **{volatility}** (std: {std_dev:.2f})")
-
-        # Scenario Simulation
-        st.subheader("🧪 Scenario Simulation (What if...)")
-        hypothetical_price = st.number_input("Enter a hypothetical price for tomorrow", min_value=0.0, value=float(data['Close'].iloc[-1]))
-        if st.button("Simulate Future"):
-            custom_input = np.append(scaled_data[-99:], [[scaler.transform([[hypothetical_price]])[0][0]]], axis=0)
-            custom_sequence = custom_input.reshape(1, 100, 1)
-
-            custom_predicted = []
-            for _ in range(future_days):
-                pred = model.predict(custom_sequence, verbose=0)[0][0]
-                custom_predicted.append(pred)
-                custom_sequence = np.append(custom_sequence[:, 1:, :], [[[pred]]], axis=1)
-
-            custom_prices = scaler.inverse_transform(np.array(custom_predicted).reshape(-1, 1))
-            custom_forecast_df = pd.DataFrame({
-                "Date": forecast_dates,
-                "Simulated Forecast": custom_prices.flatten()
-            })
-
-            fig_custom = plt.figure(figsize=(10, 5))
-            plt.plot(data['Date'], data['Close'], label='Historical')
-            plt.plot(custom_forecast_df['Date'], custom_forecast_df['Simulated Forecast'], label='Simulated Forecast', color='purple')
-            plt.title("Simulated Forecast (Based on Hypothetical Price)")
-            plt.xlabel("Date")
-            plt.ylabel("Price")
-            plt.legend()
-            st.pyplot(fig_custom)
