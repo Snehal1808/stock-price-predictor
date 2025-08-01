@@ -60,22 +60,6 @@ if symbol:
     plt.legend()
     st.pyplot(fig_ma)
 
-    # Bollinger Bands
-    st.subheader("Price with Bollinger Bands")
-    rolling_mean = data['Close'].rolling(window=20).mean()
-    rolling_std = data['Close'].rolling(window=20).std()
-    upper_band = rolling_mean + 2 * rolling_std
-    lower_band = rolling_mean - 2 * rolling_std
-
-    fig_boll = plt.figure(figsize=(10, 5))
-    plt.plot(data['Close'], label='Close Price', color='green')
-    plt.plot(rolling_mean, label='20-Day MA', color='blue')
-    plt.fill_between(data.index, lower_band, upper_band, color='lightblue', alpha=0.4, label='Bollinger Bands')
-    plt.xlabel("Index")
-    plt.ylabel("Price")
-    plt.legend()
-    st.pyplot(fig_boll)
-
     # Prepare data for prediction
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[['Close']])
