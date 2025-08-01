@@ -15,7 +15,7 @@ st.markdown("""
 
 # Sidebar
 st.sidebar.title("Stock Settings")
-symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="AAPL")
+symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="")
 years = st.sidebar.slider("Forecast Years", 1, 5, 1)
 future_days = years * 365
 
