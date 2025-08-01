@@ -106,3 +106,12 @@ if symbol:
 
     st.subheader("Forecast Data Table")
     st.dataframe(forecast_df.tail())
+
+    # Download CSV button
+    csv = forecast_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Forecast as CSV",
+        data=csv,
+        file_name=f'{symbol}_forecast.csv',
+        mime='text/csv'
+    )
