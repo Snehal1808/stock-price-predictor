@@ -5,7 +5,7 @@ from keras.models import load_model
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-import io
+from io import StringIO
 
 st.set_page_config(page_title="MarketLens", layout="wide")
 
@@ -15,22 +15,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar
-st.sidebar.title("📈 Configuration")
+st.sidebar.title("Stock Settings")
 symbol = st.sidebar.text_input("Enter Ticker Symbol (e.g., AAPL, GOOGL)", value="AAPL")
 years = st.sidebar.slider("Forecast Years", 1, 5, 1)
 future_days = years * 365
 
 show_ma = st.sidebar.multiselect(
-    "Moving Averages",
+    "Select Moving Averages",
     options=["MA50", "MA100", "MA200"],
     default=["MA50", "MA100", "MA200"]
 )
 
-show_bb = st.sidebar.checkbox("Show Bollinger Bands (20-day)", value=True)
-
-alert_price = st.sidebar.number_input(
-    "🔔 Alert if Forecast ≥", min_value=0.0, value=200.0, step=1.0
-)
+show_bb = st.sidebar.checkbox("Show Bollinger Bands", value=True)
 
 @st.cache_data
 def load_data(ticker):
@@ -46,40 +42,51 @@ if symbol:
     st.subheader(f"{symbol} Stock Data")
     st.dataframe(data.tail())
 
-    # Calculate indicators
-    ma_50 = data.Close.rolling(50).mean()
-    ma_100 = data.Close.rolling(100).mean()
-    ma_200 = data.Close.rolling(200).mean()
+    # Technical Indicators
+    ma_50 = data['Close'].rolling(window=50).mean()
+    ma_100 = data['Close'].rolling(window=100).mean()
+    ma_200 = data['Close'].rolling(window=200).mean()
 
     # Bollinger Bands
-    bb_window = 20
-    sma = data['Close'].rolling(window=bb_window).mean()
-    std = data['Close'].rolling(window=bb_window).std()
-    upper_bb = sma + (2 * std)
-    lower_bb = sma - (2 * std)
+    sma = data['Close'].rolling(window=20).mean()
+    std = data['Close'].rolling(window=20).std()
+    upper_bb = sma + 2 * std
+    lower_bb = sma - 2 * std
 
-    # Plot price with overlays
-    st.subheader("Price Chart with Technical Indicators")
+    # Combine into DataFrame for plotting
+    plot_df = data.copy()
+    plot_df['MA50'] = ma_50
+    plot_df['MA100'] = ma_100
+    plot_df['MA200'] = ma_200
+    plot_df['SMA20'] = sma
+    plot_df['UpperBB'] = upper_bb
+    plot_df['LowerBB'] = lower_bb
+    plot_df = plot_df.dropna().tail(180)  # last 180 days
+
+    st.subheader("Price Chart with Indicators")
+
     fig_ma = plt.figure(figsize=(12, 6))
-    plt.plot(data['Date'], data['Close'], label='Close Price', color='green')
+    plt.plot(plot_df['Date'], plot_df['Close'], label='Close Price', color='green', linewidth=2)
 
     if "MA50" in show_ma:
-        plt.plot(data['Date'], ma_50, label="MA50", color='red')
+        plt.plot(plot_df['Date'], plot_df['MA50'], label="MA50", color='red', linewidth=1)
     if "MA100" in show_ma:
-        plt.plot(data['Date'], ma_100, label="MA100", color='blue')
+        plt.plot(plot_df['Date'], plot_df['MA100'], label="MA100", color='blue', linewidth=1)
     if "MA200" in show_ma:
-        plt.plot(data['Date'], ma_200, label="MA200", color='orange')
+        plt.plot(plot_df['Date'], plot_df['MA200'], label="MA200", color='orange', linewidth=1)
 
     if show_bb:
-        plt.plot(data['Date'], upper_bb, label='Upper BB', color='gray', linestyle='--')
-        plt.plot(data['Date'], lower_bb, label='Lower BB', color='gray', linestyle='--')
+        plt.plot(plot_df['Date'], plot_df['UpperBB'], label='Upper BB', color='gray', linestyle='--', alpha=0.6)
+        plt.plot(plot_df['Date'], plot_df['LowerBB'], label='Lower BB', color='gray', linestyle='--', alpha=0.6)
 
     plt.xlabel("Date")
     plt.ylabel("Price")
+    plt.title("Recent Price Chart with Indicators")
     plt.legend()
+    plt.grid(True)
     st.pyplot(fig_ma)
 
-    # Forecasting
+    # Prepare data for prediction
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[['Close']])
 
@@ -99,28 +106,28 @@ if symbol:
         input_sequence = np.append(input_sequence[:, 1:, :], [[[pred]]], axis=1)
 
     predicted_prices = scaler.inverse_transform(np.array(predicted).reshape(-1, 1))
+
+    # Forecast Plot
+    st.subheader("Forecasted Stock Price")
     forecast_dates = pd.date_range(start=data['Date'].iloc[-1] + pd.Timedelta(days=1), periods=future_days)
     forecast_df = pd.DataFrame({"Date": forecast_dates, "Forecast": predicted_prices.flatten()})
 
-    # Forecast Chart
-    st.subheader("Forecasted Stock Price")
-    fig_forecast = plt.figure(figsize=(12, 5))
+    fig_forecast = plt.figure(figsize=(10, 5))
     plt.plot(data['Date'], data['Close'], label='Historical')
     plt.plot(forecast_df['Date'], forecast_df['Forecast'], label='Forecast', color='red')
+    plt.title("Stock Price Forecast")
     plt.xlabel("Date")
     plt.ylabel("Price")
-    plt.title("Stock Price Forecast")
     plt.legend()
     st.pyplot(fig_forecast)
 
-    # Forecast Table
     st.subheader("Forecast Data Table")
     st.dataframe(forecast_df.tail())
 
-    # CSV Download
-    csv = forecast_df.to_csv(index=False).encode('utf-8')
+    # Download CSV
+    csv = forecast_df.to_csv(index=False)
     st.download_button(
-        label="📥 Download Forecast as CSV",
+        label="Download Forecast CSV",
         data=csv,
         file_name=f"{symbol}_forecast.csv",
         mime='text/csv'
