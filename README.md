@@ -2,8 +2,7 @@
 
 **AI-powered stock price forecasts with real-time data—try it live!**  
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://marketlens18.streamlit.app/)  
-*(Replace the URL with your actual Streamlit link!)*  
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://marketlens18.streamlit.app/)   
 
 This project predicts future stock prices using **LSTM** (Long Short-Term Memory) and other ML models. It’s designed for traders, investors, and ML enthusiasts who want data-driven market insights.  
 
