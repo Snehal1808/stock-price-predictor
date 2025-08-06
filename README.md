@@ -48,7 +48,7 @@ marketlens/
 ├── stock_model.keras       # Trained LSTM model
 ├── train_model.ipynb       # Jupyter notebook for model training
 ├── requirements.txt        # Dependencies
-├──LICENSE
+├── LICENSE
 └── README.md
 ```
 
