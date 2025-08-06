@@ -76,7 +76,7 @@ model = Sequential([
 
 ### Deployment
 Deploy the model using a Streamlit app (app.py). The app allows users to input customer data and get churn predictions. To run the app, execute the following command:
-<video src="demo.mp4" width="600" controls></video>
+![Demo GIF](https://github.com/Snehal1808/stock-price-predictor/blob/main/assets/demo.gif?raw=true)
 
 ## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
