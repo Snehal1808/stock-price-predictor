@@ -24,11 +24,10 @@ This project predicts future stock prices using **LSTM** (Long Short-Term Memory
 The app is live on Streamlit—no installation needed!  
 👉 **[Launch App](https://marketlens18.streamlit.app/)**  
 
-<img width="1918" height="889" alt="Screenshot 2025-08-06 200319" src="https://github.com/user-attachments/assets/001bac64-b413-491b-ae58-6322aa4b55e4" />
-<img width="1907" height="891" alt="Screenshot 2025-08-06 200624" src="https://github.com/user-attachments/assets/d45a68ad-cc78-40eb-9bb9-2644a0cff39f" />
-<img width="1919" height="895" alt="Screenshot 2025-08-06 200646" src="https://github.com/user-attachments/assets/21f9ac8b-d240-440a-98c7-8e74715f13d8" />
-<img width="1917" height="875" alt="Screenshot 2025-08-06 200704" src="https://github.com/user-attachments/assets/585d86db-8bc5-4dee-8f11-e340808b6c8a" />
-<img width="1919" height="874" alt="Screenshot 2025-08-06 200719" src="https://github.com/user-attachments/assets/4c808ff3-1767-43c3-87a2-0bbb96e189d1" />
+
+
+
+
 
 ## 🛠 Tech Stack
 
@@ -106,9 +105,11 @@ model = Sequential([
 
 | Feature | Preview |
 |---------|---------|
-| **Dashboard** | ![Dashboard](https://i.imgur.com/dashboard.png) |
-| **Forecast** | ![Forecast](https://i.imgur.com/forecast.png) |
-| **Recommendations** | ![Recommendations](https://i.imgur.com/recommend.png) |
+| **Dashboard** | ![Dashboard](<img width="1918" height="889" alt="Screenshot 2025-08-06 200319" src="https://github.com/user-attachments/assets/001bac64-b413-491b-ae58-6322aa4b55e4" />) |
+| **Forecast - 1** | ![Forecast](<img width="1907" height="891" alt="Screenshot 2025-08-06 200624" src="https://github.com/user-attachments/assets/d45a68ad-cc78-40eb-9bb9-2644a0cff39f" />) |
+| **Forecast - 2** | ![Forecast](<img width="1919" height="895" alt="Screenshot 2025-08-06 200646" src="https://github.com/user-attachments/assets/21f9ac8b-d240-440a-98c7-8e74715f13d8" />) |
+| **Forecast - 3** | ![Forecast](<img width="1917" height="875" alt="Screenshot 2025-08-06 200704" src="https://github.com/user-attachments/assets/585d86db-8bc5-4dee-8f11-e340808b6c8a" />) |
+| **Recommendations** | ![Recommendations](<img width="1919" height="874" alt="Screenshot 2025-08-06 200719" src="https://github.com/user-attachments/assets/4c808ff3-1767-43c3-87a2-0bbb96e189d1" />) |
 
 ## 🤝 Contributing
 1. Fork the project
