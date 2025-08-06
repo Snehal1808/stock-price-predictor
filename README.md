@@ -84,12 +84,4 @@ model = Sequential([
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## ✉️ Contact
-Your Name  - snehalsubu18@example.com
-```
-
-## Key Highlights:
-1. **Dual Focus**: Showcases both ML model and Streamlit app
-2. **Visual Hierarchy**: Clean sections with emoji categorization
-3. **Actionable Links**: Direct Colab and Streamlit badges
-4. **Tech Transparency**: Clear stack breakdown
-5. **Reproducibility**: Detailed setup instructions
+Snehal Kumar Subudhi - snehalsubu18@example.com
