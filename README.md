@@ -81,4 +81,4 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 Distributed under the MIT License. See [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) for more information.
 
 ## ✉️ Contact
-Snehal Kumar Subudhi - snehalsubu18@example.com
+Snehal Kumar Subudhi - snehalsubu18@gmail.com
