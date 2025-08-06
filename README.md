@@ -81,8 +81,7 @@ model = Sequential([
 5. Open a Pull Request
 
 ## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Distributed under the MIT License. See [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) for more information.
 
 ## ✉️ Contact
 Snehal Kumar Subudhi - snehalsubu18@example.com
