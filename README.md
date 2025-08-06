@@ -76,7 +76,7 @@ model = Sequential([
 
 ### Deployment
 Deploy the model using a Streamlit app (app.py). The app allows users to input customer data and get churn predictions. To run the app, execute the following command:
-[![Video Demo](https://img.youtube.com/vi/f6N1Y_HNsk8/0.jpg)](https://youtu.be/f6N1Y_HNsk8)
+📹 **[Watch Video Demo](https://github.com/Snehal1808/your-repo/blob/main/assets/demo.mp4?raw=true)**
 
 ## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
