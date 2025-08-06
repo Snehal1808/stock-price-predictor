@@ -24,10 +24,12 @@ This project predicts future stock prices using **LSTM** (Long Short-Term Memory
 The app is live on Streamlit—no installation needed!  
 👉 **[Launch App](https://marketlens18.streamlit.app/)**  
 
-
-
-
-
+## 🖼️ Screenshots
+<img width="1918" height="889" alt="Screenshot 2025-08-06 200319" src="https://github.com/user-attachments/assets/fbb1aa1f-5ce5-4e60-b9a3-05e7ab5c59a1" />
+<img width="1907" height="891" alt="Screenshot 2025-08-06 200624" src="https://github.com/user-attachments/assets/f12c26ce-2e64-43c0-b929-d60118989700" />
+<img width="1919" height="895" alt="Screenshot 2025-08-06 200646" src="https://github.com/user-attachments/assets/f295c137-7d40-49aa-a983-6672c82a825c" />
+<img width="1917" height="875" alt="Screenshot 2025-08-06 200704" src="https://github.com/user-attachments/assets/c9bac703-132d-4d8e-b261-6c5e0f1e7a08" />
+<img width="1919" height="874" alt="Screenshot 2025-08-06 200719" src="https://github.com/user-attachments/assets/3aaaf8f9-4478-4c6d-9a49-5b18bfa7018b" />
 
 ## 🛠 Tech Stack
 
@@ -38,36 +40,6 @@ The app is live on Streamlit—no installation needed!
 | **Visualization** | Matplotlib, Plotly |
 | **Frontend**   | Streamlit |
 | **Deployment** | Streamlit Cloud |
-
-
-## ✨ Features
-
-### 🧠 AI Prediction Engine
-- **4-layer LSTM model** with dropout regularization (94% accuracy)
-- **10 years of historical data** from Yahoo Finance
-- **Multi-day forecasting** (1-5 year predictions)
-- **Technical indicators**: 50/100/200-day moving averages
-
-## 🚀 Quick Start
-
-### Prerequisites
-```bash
-pip install -r requirements.txt
-```
-
-### Running Locally
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/marketlens.git
-   cd marketlens
-   ```
-2. Run the Streamlit app:
-   ```bash
-   streamlit run app.py
-   ```
-
-### Access Web App
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://marketlens.streamlit.app)
 
 ## 📂 Project Structure
 ```
@@ -101,16 +73,6 @@ model = Sequential([
 | MAE    | 1.52  |
 | R²     | 0.94  |
 
-## 🖼️ Screenshots
-
-| Feature | Preview |
-|---------|---------|
-| **Dashboard** | ![Dashboard](<img width="1918" height="889" alt="Screenshot 2025-08-06 200319" src="https://github.com/user-attachments/assets/001bac64-b413-491b-ae58-6322aa4b55e4" />) |
-| **Forecast - 1** | ![Forecast](<img width="1907" height="891" alt="Screenshot 2025-08-06 200624" src="https://github.com/user-attachments/assets/d45a68ad-cc78-40eb-9bb9-2644a0cff39f" />) |
-| **Forecast - 2** | ![Forecast](<img width="1919" height="895" alt="Screenshot 2025-08-06 200646" src="https://github.com/user-attachments/assets/21f9ac8b-d240-440a-98c7-8e74715f13d8" />) |
-| **Forecast - 3** | ![Forecast](<img width="1917" height="875" alt="Screenshot 2025-08-06 200704" src="https://github.com/user-attachments/assets/585d86db-8bc5-4dee-8f11-e340808b6c8a" />) |
-| **Recommendations** | ![Recommendations](<img width="1919" height="874" alt="Screenshot 2025-08-06 200719" src="https://github.com/user-attachments/assets/4c808ff3-1767-43c3-87a2-0bbb96e189d1" />) |
-
 ## 🤝 Contributing
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -122,7 +84,7 @@ model = Sequential([
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## ✉️ Contact
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - youremail@example.com
+Your Name  - snehalsubu18@example.com
 ```
 
 ## Key Highlights:
