@@ -10,7 +10,7 @@ st.set_page_config(page_title="MarketLens", layout="wide")
 
 st.markdown("""
     <h1 style='text-align: center; color: #f94d4d;'>Market<span style='color:#4df98b;'>Lens</span></h1>
-    <h4 style='text-align: center; color: white;'>AI-powered insights into stock market trends.</h4>
+    <h4 style='text-align: center; color: white;'>AI-powered insights into stock market trends</h4>
 """, unsafe_allow_html=True)
 
 # Sidebar
@@ -116,3 +116,4 @@ if symbol:
         else:
             volatility = "🔴 High"
         st.markdown(f"Estimated forecast volatility: **{volatility}** (std: {std_dev:.2f})")
+
