@@ -1,4 +1,4 @@
-# 📈 MarketLens 
+# 📈 MarketLens - Stock Price Predictor
 
 **AI-powered stock price forecasts with real-time data—try it live!**  
 
